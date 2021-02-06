@@ -14,7 +14,7 @@ public class CardStack {
             // Initialize deck
             for (Rank r : Rank.values()) {
                 for (Suit s : Suit.values()) {
-                    cards.add(new Card(s, r));
+                    cards.add(new Card(r, s));
                 }
             }
 
@@ -24,6 +24,7 @@ public class CardStack {
         faceUp = !startFilled; // Decks are face down, discard piles are face up
     }
 
+    /* NON-STATIC METHODS */
     public void shuffle() {
         Collections.shuffle(cards);
     }
@@ -34,13 +35,30 @@ public class CardStack {
         } else return null;
     }
 
-    // Stack-like LIFO opperations
+    public Card get(Rank r, Suit s) {
+        Card c = new Card(r, s);
+        Card val = null;
+        for (Card card : cards) {
+            if (card.equals(c)) {
+                val = card;
+                break;
+            }
+        }
+        if (!faceUp) shuffle();
+        return val;
+    }
+
+    /* STACK-LIKE LIFO OPPERATIONS */
     public Card draw() {
         return cards.remove(0);
     }
 
     public void add(Card card) {
         cards.add(0, card);
+    }
+
+    public Card peek() {
+        return faceUp ? cards.get(0) : null;
     }
 }
 
@@ -51,17 +69,24 @@ class Card implements Serializable {
     private Suit suit;
     private Rank rank;
 
-    public Card(Suit s, Rank r) {
+    public Card(Rank r, Suit s) {
         suit = s;
         rank = r;
     }
 
+    /* NON-STATIC METHODS */
     public Suit getSuit() {
         return suit;
     }
 
     public Rank getRank() {
         return rank;
+    }
+
+    /* OVERRIDES */
+    public boolean equals(Card other) {
+        if (other == null) return false;
+        return this.rank == other.rank && this.suit == other.suit;
     }
 
     public String toString() {
@@ -121,7 +146,7 @@ class Card implements Serializable {
                 r = "King";
                 break;
         }
-        return "The " + r + " of " + s;
+        return r + " of " + s;
     }
 }
 

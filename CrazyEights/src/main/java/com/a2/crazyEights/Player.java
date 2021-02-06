@@ -10,15 +10,15 @@ import java.util.Scanner;
 
 public class Player implements Serializable {
 
+    // Static members
     private static final long serialVersionUID = 1L;
-    public String name;
-
-    int playerId = 0;
-
     static Client clientConnection;
 
-    ArrayList<Player> opponents = new ArrayList<>();
-    ArrayList<Card> hand = new ArrayList<>();
+    // Private data members
+    private int playerId = 0;
+    private String name;
+    private ArrayList<Player> opponents = new ArrayList<>();
+    private ArrayList<Card> hand = new ArrayList<>();
 
     public Player(String n) {
         name = n;
@@ -37,28 +37,80 @@ public class Player implements Serializable {
     }
 
     /* NON-STATIC METHODS */
-
     public void startGame() {
-        // Receive players once for names
-        opponents = clientConnection.receiveOpponents();
-        for (int i = 0; i < 5; i++) {
-            hand.add(clientConnection.receiveCard());
-        }
-        System.out.println("Game Start!");
+        System.out.println("Waiting for game to start...");
+        clientConnection.receiveSignal();
+        System.out.println("\n******* Game Start! *******\n");
         //noinspection LoopStatementThatDoesntLoop
         while (true) {
-            // Game Loop
-            clientConnection.sendHandCount();
-            ArrayList<Integer> handCounts = clientConnection.receiveOpponentHandCounts();
-            for (int i = 0; i < opponents.size(); i++) {
-                System.out.println("Opponent " + opponents.get(i).getName() + " has " + handCounts.get(i) + " cards remaining.");
+            // Receive opponents for names and hand counts
+            opponents = clientConnection.receiveOpponents();
+            hand = clientConnection.receiveHand();
+            for (Player p : opponents) {
+                System.out.println(p.getName() + " has " + p.getHandSize() + " cards left.");
             }
-            System.out.println(hand);
+            System.out.println("\nYour hand is: " + hand);
+            // Game Loop
             break;
         }
     }
 
-    private String getName() {
+    public void addCard(Card c) {
+        hand.add(c);
+    }
+
+    public Card playCard(Card c) {
+        Card val = null;
+        int i;
+
+        for (i = 0; i < hand.size(); i++) {
+            Card card = hand.get(i);
+            if (card.equals(c)) {
+                val = card;
+                break;
+            }
+        }
+        if (i != hand.size())
+            hand.remove(i);
+
+        return val;
+    }
+
+    public Card playCard(Rank r, Suit s) {
+        Card c = new Card(r, s);
+        Card val = null;
+        int i;
+
+        for (i = 0; i < hand.size(); i++) {
+            Card card = hand.get(i);
+            if (card.equals(c)) {
+                val = card;
+                break;
+            }
+        }
+        if (i != hand.size())
+            hand.remove(i);
+
+        return val;
+    }
+
+    public Card getCard(Rank r, Suit s) {
+        Card c = new Card(r, s);
+
+        for (Card card : hand) {
+            if (card.equals(c)) {
+                return card;
+            }
+        }
+
+        return null;
+    }
+
+    public int getHandSize() {
+        return hand.size();
+    }
+
+    public String getName() {
         return name;
     }
 
@@ -79,6 +131,10 @@ public class Player implements Serializable {
 
     public void connectToClient(int port) {
         clientConnection = new Client(port);
+    }
+
+    public ArrayList<Card> getHand() {
+        return hand;
     }
 
     /* EXTRA CLASSES */
@@ -119,6 +175,7 @@ public class Player implements Serializable {
             }
         }
 
+        /* NON-STATIC METHODS */
         // Sends the Player object to the server
         public void sendPlayer() {
             try {
@@ -187,20 +244,45 @@ public class Player implements Serializable {
             return handCounts;
         }
 
-        // Receive card object to populate player hand
-        public Card receiveCard() {
+        // Receive the number of cards to be sent to the player
+        public int receiveNumCards() {
             try {
-                Card card = (Card) dIn.readObject();
-                System.out.println("You draw " + card);
-                return card;
+                return dIn.readInt();
             } catch (IOException e) {
-                System.out.println("Card not received");
+                System.out.println("Number of cards not received");
+                e.printStackTrace();
+            }
+            return 0;
+        }
+
+        // Receive card objects representing the player's hand
+        public ArrayList<Card> receiveHand() {
+            // Get the number of cards being received
+            int numCards = receiveNumCards();
+            ArrayList<Card> clist = new ArrayList<>();
+            try {
+                for (int i = 0; i < numCards; i++) {
+                    clist.add((Card) dIn.readObject());
+                }
+            } catch (IOException e) {
+                System.out.println("Hand not received");
                 e.printStackTrace();
             } catch (ClassNotFoundException e) {
                 System.out.println("Class not found");
                 e.printStackTrace();
             }
-            return null;
+            return clist;
+        }
+
+        // Receive a generic signal from the server
+        public int receiveSignal() {
+            try {
+                return dIn.readInt();
+            } catch (IOException e) {
+                System.out.println("Signal not received");
+                e.printStackTrace();
+            }
+            return 0;
         }
     }
 }
