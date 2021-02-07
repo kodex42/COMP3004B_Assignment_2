@@ -29,6 +29,12 @@ public class CardStack {
         Collections.shuffle(cards);
     }
 
+    public void set(int i, Rank r, Suit s) {
+        Card c = cards.get(i);
+        c.setRank(r);
+        c.setSuit(s);
+    }
+
     public Card get(int i) {
         if (faceUp) {
             return cards.get(i);
@@ -60,6 +66,10 @@ public class CardStack {
     public Card peek() {
         return faceUp ? cards.get(0) : null;
     }
+
+    public int size() {
+        return cards.size();
+    }
 }
 
 class Card implements Serializable {
@@ -81,6 +91,14 @@ class Card implements Serializable {
 
     public Rank getRank() {
         return rank;
+    }
+
+    public void setRank(Rank r) {
+        rank = r;
+    }
+
+    public void setSuit(Suit s) {
+        suit = s;
     }
 
     /* OVERRIDES */

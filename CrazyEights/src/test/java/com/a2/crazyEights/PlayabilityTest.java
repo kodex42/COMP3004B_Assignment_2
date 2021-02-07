@@ -3,7 +3,7 @@ package com.a2.crazyEights;
 import junit.framework.TestCase;
 
 public class PlayabilityTest extends TestCase {
-    public void testPlayerCanPlayKingHeartsOnKingClubs() {
+    public void testPlayerCanPlayKHOnKC() {
         // Declare objects
         Game game = new Game(4);
         Player p1 = new Player("P1");
@@ -14,6 +14,12 @@ public class PlayabilityTest extends TestCase {
         game.players.add(p2);
         game.players.add(p3);
         game.players.add(p4);
+
+        // Set the player id (normally done automatically by the server)
+        p1.setPlayerId(1);
+        p2.setPlayerId(2);
+        p3.setPlayerId(3);
+        p4.setPlayerId(4);
 
         // Start the round with king of clubs
         game.roundForceStartNoDeal(Rank.KING, Suit.CLUBS);
@@ -32,7 +38,7 @@ public class PlayabilityTest extends TestCase {
         assertEquals(2, game.getActivePlayer());
     }
 
-    public void testPlayerCanPlaySevenClubsOnKingClubs() {
+    public void testPlayerCanPlay7COnKC() {
         // Declare objects
         Game game = new Game(4);
         Player p1 = new Player("P1");
@@ -43,6 +49,12 @@ public class PlayabilityTest extends TestCase {
         game.players.add(p2);
         game.players.add(p3);
         game.players.add(p4);
+
+        // Set the player id (normally done automatically by the server)
+        p1.setPlayerId(1);
+        p2.setPlayerId(2);
+        p3.setPlayerId(3);
+        p4.setPlayerId(4);
 
         // Start the round with king of clubs
         game.roundForceStartNoDeal(Rank.KING, Suit.CLUBS);
@@ -61,7 +73,7 @@ public class PlayabilityTest extends TestCase {
         assertEquals(2, game.getActivePlayer());
     }
 
-    public void testPlayerCanPlayEightHeartsOnKingClubs() {
+    public void testPlayerCanPlay8HOnKC() {
         // Declare objects
         Game game = new Game(4);
         Player p1 = new Player("P1");
@@ -72,6 +84,12 @@ public class PlayabilityTest extends TestCase {
         game.players.add(p2);
         game.players.add(p3);
         game.players.add(p4);
+
+        // Set the player id (normally done automatically by the server)
+        p1.setPlayerId(1);
+        p2.setPlayerId(2);
+        p3.setPlayerId(3);
+        p4.setPlayerId(4);
 
         // Start the round with king of clubs
         game.roundForceStartNoDeal(Rank.KING, Suit.CLUBS);
@@ -85,12 +103,13 @@ public class PlayabilityTest extends TestCase {
 
         // check who goes next after player 1 plays the three of clubs
         assertEquals(1, game.getActivePlayer());
-        PlayResult result = game.play(p1.getCard(Rank.EIGHT, Suit.HEARTS));
+        PlayResult result = game.playEight(p1.getCard(Rank.EIGHT, Suit.HEARTS), Suit.SPADES);
         assertEquals(PlayResult.WILD, result);
+        assertEquals(Suit.SPADES, game.discard.peek().getSuit());
         assertEquals(2, game.getActivePlayer());
     }
 
-    public void testPlayerCanPlayFiveSpadesOnKingClubs() {
+    public void testPlayerCannotPlay5SOnKC() {
         // Declare objects
         Game game = new Game(4);
         Player p1 = new Player("P1");
@@ -101,6 +120,12 @@ public class PlayabilityTest extends TestCase {
         game.players.add(p2);
         game.players.add(p3);
         game.players.add(p4);
+
+        // Set the player id (normally done automatically by the server)
+        p1.setPlayerId(1);
+        p2.setPlayerId(2);
+        p3.setPlayerId(3);
+        p4.setPlayerId(4);
 
         // Start the round with king of clubs
         game.roundForceStartNoDeal(Rank.KING, Suit.CLUBS);

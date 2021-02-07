@@ -14,6 +14,10 @@ public class Player implements Serializable {
     private static final long serialVersionUID = 1L;
     static Client clientConnection;
 
+    // Available data members
+    int numTimesDrawn = 0;
+    int score = 0;
+
     // Private data members
     private int playerId = 0;
     private String name;
@@ -57,6 +61,10 @@ public class Player implements Serializable {
 
     public void addCard(Card c) {
         hand.add(c);
+    }
+
+    public void setPlayerId(int playerId) {
+        this.playerId = playerId;
     }
 
     public Card playCard(Card c) {
@@ -114,8 +122,20 @@ public class Player implements Serializable {
         return name;
     }
 
+    public int getPlayerId() {
+        return playerId;
+    }
+
     public Player getPlayer() {
         return this;
+    }
+
+    public ArrayList<Card> getHand() {
+        return hand;
+    }
+
+    public void emptyHand() {
+        hand.clear();
     }
 
     /* OVERRIDES */
@@ -133,10 +153,6 @@ public class Player implements Serializable {
         clientConnection = new Client(port);
     }
 
-    public ArrayList<Card> getHand() {
-        return hand;
-    }
-
     /* EXTRA CLASSES */
     private class Client {
         Socket socket;
@@ -149,7 +165,7 @@ public class Player implements Serializable {
                 dOut = new ObjectOutputStream(socket.getOutputStream());
                 dIn = new ObjectInputStream(socket.getInputStream());
 
-                playerId = dIn.readInt();
+                setPlayerId(dIn.readInt());
 
                 System.out.println("Connected as " + playerId);
                 sendPlayer();

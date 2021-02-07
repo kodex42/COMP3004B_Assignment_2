@@ -15,6 +15,12 @@ public class WhoPlaysNextTest extends TestCase {
         game.players.add(p3);
         game.players.add(p4);
 
+        // Set the player id (normally done automatically by the server)
+        p1.setPlayerId(1);
+        p2.setPlayerId(2);
+        p3.setPlayerId(3);
+        p4.setPlayerId(4);
+
         // Start the round
         game.roundForceStartNoDeal(Rank.ACE, Suit.CLUBS);
 
@@ -42,6 +48,12 @@ public class WhoPlaysNextTest extends TestCase {
         game.players.add(p2);
         game.players.add(p3);
         game.players.add(p4);
+
+        // Set the player id (normally done automatically by the server)
+        p1.setPlayerId(1);
+        p2.setPlayerId(2);
+        p3.setPlayerId(3);
+        p4.setPlayerId(4);
 
         // Start the round
         game.roundForceStartNoDeal(Rank.ACE, Suit.CLUBS);
@@ -71,6 +83,12 @@ public class WhoPlaysNextTest extends TestCase {
         game.players.add(p3);
         game.players.add(p4);
 
+        // Set the player id (normally done automatically by the server)
+        p1.setPlayerId(1);
+        p2.setPlayerId(2);
+        p3.setPlayerId(3);
+        p4.setPlayerId(4);
+
         // Start the round
         game.roundForceStartNoDeal(Rank.ACE, Suit.CLUBS);
 
@@ -98,6 +116,12 @@ public class WhoPlaysNextTest extends TestCase {
         game.players.add(p2);
         game.players.add(p3);
         game.players.add(p4);
+
+        // Set the player id (normally done automatically by the server)
+        p1.setPlayerId(1);
+        p2.setPlayerId(2);
+        p3.setPlayerId(3);
+        p4.setPlayerId(4);
 
         // Start the round
         game.roundForceStartNoDeal(Rank.ACE, Suit.CLUBS);
@@ -136,6 +160,12 @@ public class WhoPlaysNextTest extends TestCase {
         game.players.add(p3);
         game.players.add(p4);
 
+        // Set the player id (normally done automatically by the server)
+        p1.setPlayerId(1);
+        p2.setPlayerId(2);
+        p3.setPlayerId(3);
+        p4.setPlayerId(4);
+
         // Start the round
         game.roundForceStartNoDeal(Rank.ACE, Suit.CLUBS);
 
@@ -172,6 +202,12 @@ public class WhoPlaysNextTest extends TestCase {
         game.players.add(p2);
         game.players.add(p3);
         game.players.add(p4);
+
+        // Set the player id (normally done automatically by the server)
+        p1.setPlayerId(1);
+        p2.setPlayerId(2);
+        p3.setPlayerId(3);
+        p4.setPlayerId(4);
 
         // Start the round
         game.roundForceStartNoDeal(Rank.ACE, Suit.CLUBS);
