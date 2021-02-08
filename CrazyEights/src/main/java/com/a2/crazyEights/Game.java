@@ -7,7 +7,6 @@ public class Game {
     // Accessible data members
     int round = 0;
     int numPlayers;
-    int stackedTwos = 0;
     boolean reversed = false;
     boolean gameOver = false;
     CardStack deck = new CardStack(true);
@@ -20,6 +19,15 @@ public class Game {
 
     public Game(int numPlayers) {
         this.numPlayers = numPlayers;
+    }
+
+    private int getNumStackedTwos() {
+        int i;
+        for (i = 0; i < discard.size(); i++) {
+            if (discard.get(i).getRank() != Rank.TWO)
+                break;
+        }
+        return i;
     }
 
     private void resolveWin() {
@@ -63,10 +71,9 @@ public class Game {
     }
 
     public void roundStart() {
-        stackedTwos = 0;
         activePlayer = 1;
         for (int i = 0; i < round; i++) {
-            activePlayer = nextPlayer();
+            activePlayer = getNextPlayer();
         }
         round++;
         reversed = false;
@@ -80,7 +87,6 @@ public class Game {
     }
 
     public PlayResult playEight(Card card, Suit newSuit) {
-        stackedTwos = 0;
         // Play card from player's hand
         // This is done server side to prevent loss of cards through the socket
         discard.add(players.get(activePlayer-1).playCard(card));
@@ -92,7 +98,7 @@ public class Game {
         if (players.get(activePlayer-1).getHandSize() == 0)
             return PlayResult.ROUND_WIN;
 
-        activePlayer = nextPlayer();
+        activePlayer = getNextPlayer();
 
         return PlayResult.WILD;
     }
@@ -106,7 +112,6 @@ public class Game {
             return PlayResult.INVALID_PLAY;
         else
             player.numTimesDrawn = 0; // Reset the player's draw count since their play is valid
-        if (card.getRank() != Rank.TWO) stackedTwos = 0;
 
         // Play card from player's hand
         // This is done server side to prevent loss of cards through the socket
@@ -119,15 +124,11 @@ public class Game {
                 reversed = !reversed; // Reverse player order
                 break;
             case TWO:
-                stackedTwos++;
-                if (nextPlayerHasTwo())
-                    result = PlayResult.TWO_CHAIN_POSSIBLE;
-                else
-                    result = PlayResult.TWO_NO_CHAIN;
+                result = PlayResult.TWO;
                 break;
             case QUEEN:
                 result = PlayResult.SKIP;
-                activePlayer = nextPlayer(); // Skip a player
+                activePlayer = getNextPlayer(); // Skip a player
                 break;
         }
 
@@ -143,7 +144,7 @@ public class Game {
             return PlayResult.STALEMATE;
         }
 
-        activePlayer = nextPlayer();
+        activePlayer = getNextPlayer();
 
         return result;
     }
@@ -159,7 +160,6 @@ public class Game {
             return PlayResult.INVALID_PLAY;
         else
             player.numTimesDrawn = 0; // Reset the player's draw count since their play is valid
-        if (c1.getRank() != Rank.TWO) stackedTwos = 0;
 
         // Play card from player's hand
         // This is done server side to prevent loss of cards through the socket
@@ -170,18 +170,14 @@ public class Game {
             case ACE:
                 reversed = !reversed; // Reverse player order
                 break;
-            case TWO:
-                stackedTwos++;
-                break;
             case QUEEN:
-                activePlayer = nextPlayer(); // Skip a player
+                activePlayer = getNextPlayer(); // Skip a player
                 break;
         }
 
         // Check if the card can be played
         if (!isValidPlay(c2))
             return PlayResult.INVALID_PLAY;
-        if (c1.getRank() != Rank.TWO) stackedTwos = 0;
 
         // Play card from player's hand
         // This is done server side to prevent loss of cards through the socket
@@ -194,15 +190,11 @@ public class Game {
                 reversed = !reversed; // Reverse player order
                 break;
             case TWO:
-                stackedTwos++;
-                if (nextPlayerHasTwo())
-                    result = PlayResult.TWO_CHAIN_POSSIBLE;
-                else
-                    result = PlayResult.TWO_NO_CHAIN;
+                result = PlayResult.TWO;
                 break;
             case QUEEN:
                 result = PlayResult.SKIP;
-                activePlayer = nextPlayer(); // Skip a player
+                activePlayer = getNextPlayer(); // Skip a player
                 break;
         }
 
@@ -218,7 +210,7 @@ public class Game {
             return PlayResult.STALEMATE;
         }
 
-        activePlayer = nextPlayer();
+        activePlayer = getNextPlayer();
 
         return result;
     }
@@ -226,7 +218,7 @@ public class Game {
     public void pass() {
         Player p = players.get(activePlayer-1);
         p.numTimesDrawn = 0;
-        activePlayer = nextPlayer();
+        activePlayer = getNextPlayer();
     }
 
     public void deal() {
@@ -260,7 +252,11 @@ public class Game {
         );
     }
 
-    public int nextPlayer() {
+    public int getActivePlayer() {
+        return activePlayer;
+    }
+
+    public int getNextPlayer() {
         int increment = reversed ? -1 : 1;
         int next = activePlayer + increment;
         if (next > numPlayers) next -= numPlayers;
@@ -268,8 +264,12 @@ public class Game {
         return next;
     }
 
+    public boolean deckHasCards() {
+        return deck.size() > 0;
+    }
+
     public boolean nextPlayerHasTwo() {
-        Player next = players.get(nextPlayer());
+        Player next = players.get(getNextPlayer());
 
         ArrayList<Card> hand = next.getHand();
         for (Card card : hand) {
@@ -282,13 +282,12 @@ public class Game {
     public void drawFromTwo() {
         Player p = players.get(activePlayer-1);
         // draw two cards per number of stacked twos
-        for (int i = 0; i < stackedTwos; i++) {
+        for (int i = 0; i < getNumStackedTwos(); i++) {
             if (deckHasCards())
                 p.addCard(deck.draw());
             if (deckHasCards())
                 p.addCard(deck.draw());
         }
-        stackedTwos = 0;
     }
 
     public ArrayList<Card> canDenyTwo() {
@@ -332,7 +331,6 @@ public class Game {
     }
 
     public void draw() {
-        stackedTwos = 0;
         Player p = players.get(activePlayer-1);
         if (canDraw()) {
             p.addCard(deck.draw());
@@ -340,20 +338,11 @@ public class Game {
         }
     }
 
-    public int getActivePlayer() {
-        return activePlayer;
-    }
-
-    public boolean deckHasCards() {
-        return deck.size() > 0;
-    }
-
     /* ONLY FOR TESTING */
     public void roundForceStartNoDeal(Rank r, Suit s) {
-        stackedTwos = 0;
         activePlayer = 1;
         for (int i = 0; i < round; i++) {
-            activePlayer = nextPlayer();
+            activePlayer = getNextPlayer();
         }
         round++;
         reversed = false;
@@ -366,7 +355,6 @@ public class Game {
     }
 
     public void riggedDraw(Rank r, Suit s) {
-        stackedTwos = 0;
         Player p = players.get(activePlayer-1);
         if (canDraw()) {
             p.addCard(deck.get(r, s));
@@ -375,7 +363,6 @@ public class Game {
     }
 
     public void riggedDrawFromTwo(Rank r1, Suit s1, Rank r2, Suit s2) {
-        stackedTwos = 0;
         Player p = players.get(activePlayer-1);
         // draw two specific cards
         p.addCard(deck.get(r1, s1));
@@ -389,8 +376,7 @@ enum PlayResult {
     SKIP,
     REVERSE,
     WILD,
-    TWO_CHAIN_POSSIBLE,
-    TWO_NO_CHAIN,
+    TWO,
     ROUND_WIN,
     STALEMATE
 }

@@ -19,6 +19,7 @@ public class Player implements Serializable {
     int score = 0;
 
     // Private data members
+    private boolean isPlaying = true;
     private int playerId = 0;
     private String name;
     private ArrayList<Player> opponents = new ArrayList<>();
@@ -45,8 +46,7 @@ public class Player implements Serializable {
         System.out.println("Waiting for game to start...");
         clientConnection.receiveSignal();
         System.out.println("\n******* Game Start! *******\n");
-        //noinspection LoopStatementThatDoesntLoop
-        while (true) {
+        while (isPlaying) {
             // Receive opponents for names and hand counts
             opponents = clientConnection.receiveOpponents();
             hand = clientConnection.receiveHand();
@@ -54,8 +54,9 @@ public class Player implements Serializable {
                 System.out.println(p.getName() + " has " + p.getHandSize() + " cards left.");
             }
             System.out.println("\nYour hand is: " + hand);
-            // Game Loop
-            break;
+
+
+
         }
     }
 

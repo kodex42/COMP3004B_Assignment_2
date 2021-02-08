@@ -94,15 +94,20 @@ public class GameServer implements Serializable {
                 turns++;
 
                 for (int i = 0; i < numPlayers; i++) {
-                    // Send opponents for names and hand count, and send hand to each player
-                    playerServers.get(i).sendOpponents(game.players, game.players.get(i));
-                    playerServers.get(i).sendHand(game.players.get(i).getHand());
+                    // Send relevant data to players
+                    Server playerSever = playerServers.get(i);
+                    playerSever.sendOpponents(game.players, game.players.get(i)); // For names and hand counts
+                    playerSever.sendHand(game.players.get(i).getHand());
+                    
                 }
 
-                System.out.println("****************************************");
-                System.out.println("Turn " + turns);
+                int activePlayer = game.getActivePlayer();
+                int nextPlayer = game.getNextPlayer();
+                boolean canPlay = game.canPlay();
+                boolean canDraw = game.canDraw();
 
-                isPlaying = false;
+                if (game.champion != null)
+                    isPlaying = false;
             }
         } catch (Exception e) {
             e.printStackTrace();

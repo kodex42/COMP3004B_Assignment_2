@@ -36,7 +36,7 @@ public class PlayingTwoTest extends TestCase {
         // player 1 plays the two of clubs
         PlayResult result = game.play(p1.getCard(Rank.TWO, Suit.CLUBS));
         // no chain should be possible since player 2 does not have a 2
-        assertEquals(PlayResult.TWO_NO_CHAIN, result);
+        assertEquals(PlayResult.TWO, result);
         // player 2 is now active and must draw two cards
         assertEquals(2, game.getActivePlayer());
         game.riggedDrawFromTwo(Rank.SIX, Suit.CLUBS, Rank.NINE, Suit.DIAMONDS);
@@ -80,7 +80,7 @@ public class PlayingTwoTest extends TestCase {
         // player 1 plays the two of clubs
         PlayResult result = game.play(p1.getCard(Rank.TWO, Suit.CLUBS));
         // no chain should be possible since player 2 does not have a 2
-        assertEquals(PlayResult.TWO_NO_CHAIN, result);
+        assertEquals(PlayResult.TWO, result);
         // player 2 is now active and must draw two cards
         assertEquals(2, game.getActivePlayer());
         game.riggedDrawFromTwo(Rank.SIX, Suit.SPADES, Rank.NINE, Suit.DIAMONDS);
@@ -132,7 +132,7 @@ public class PlayingTwoTest extends TestCase {
         // player 1 plays the two of clubs
         PlayResult result = game.play(p1.getCard(Rank.TWO, Suit.CLUBS));
         // no chain should be possible since player 2 does not have a 2
-        assertEquals(PlayResult.TWO_NO_CHAIN, result);
+        assertEquals(PlayResult.TWO, result);
         // player 2 is now active and must draw two cards
         assertEquals(2, game.getActivePlayer());
         game.riggedDrawFromTwo(Rank.SIX, Suit.SPADES, Rank.NINE, Suit.DIAMONDS);
@@ -186,7 +186,7 @@ public class PlayingTwoTest extends TestCase {
         // player 1 plays the two of clubs
         PlayResult result = game.play(p1.getCard(Rank.TWO, Suit.CLUBS));
         // no chain should be possible since player 2 does not have a 2
-        assertEquals(PlayResult.TWO_NO_CHAIN, result);
+        assertEquals(PlayResult.TWO, result);
         // player 2 is now active and must draw two cards
         assertEquals(2, game.getActivePlayer());
         game.riggedDrawFromTwo(Rank.TWO, Suit.HEARTS, Rank.NINE, Suit.DIAMONDS);
@@ -195,15 +195,11 @@ public class PlayingTwoTest extends TestCase {
         assertTrue(game.canPlay());
         // player 2 plays the six of clubs
         result = game.play(p2.getCard(Rank.TWO, Suit.HEARTS));
-        // no chain should be possible since player 3 does not have a 2, so player 3 draws 2
-        assertEquals(PlayResult.TWO_NO_CHAIN, result);
+        // no chain should be possible since player 3 does not have a 2, so player 3 draws 4 from the stacked twos
+        assertEquals(PlayResult.TWO, result);
         assertEquals(3, game.getActivePlayer());
-        game.drawFromTwo();
-        // player 3 decides to draw 2 more cards, six of hearts and seven of clubs
-        assertTrue(game.canDraw());
-        game.riggedDraw(Rank.SIX, Suit.HEARTS);
-        assertTrue(game.canDraw());
-        game.riggedDraw(Rank.SEVEN, Suit.CLUBS);
+        game.riggedDrawFromTwo(Rank.FIVE, Suit.SPADES, Rank.SIX, Suit.DIAMONDS);
+        game.riggedDrawFromTwo(Rank.SIX, Suit.HEARTS, Rank.SEVEN, Suit.CLUBS);
         assertEquals(5, p3.getHandSize());
         // player 3 is now able to play and plays the six of hearts
         assertTrue(game.canPlay());
@@ -245,7 +241,7 @@ public class PlayingTwoTest extends TestCase {
         // player 1 plays the two of clubs
         PlayResult result = game.play(p1.getCard(Rank.TWO, Suit.CLUBS));
         // no chain should be possible since player 2 does not have a 2
-        assertEquals(PlayResult.TWO_NO_CHAIN, result);
+        assertEquals(PlayResult.TWO, result);
         // player 2 is now active and checks for a sequence of card plays to deny with
         assertEquals(2, game.getActivePlayer());
         ArrayList<Card> sequence = game.canDenyTwo();
@@ -288,7 +284,7 @@ public class PlayingTwoTest extends TestCase {
         // player 1 plays the two of clubs
         PlayResult result = game.play(p1.getCard(Rank.TWO, Suit.CLUBS));
         // no chain should be possible since player 2 does not have a 2
-        assertEquals(PlayResult.TWO_NO_CHAIN, result);
+        assertEquals(PlayResult.TWO, result);
         // player 2 is now active and checks for a sequence of card plays to deny with
         assertEquals(2, game.getActivePlayer());
         ArrayList<Card> sequence = game.canDenyTwo();

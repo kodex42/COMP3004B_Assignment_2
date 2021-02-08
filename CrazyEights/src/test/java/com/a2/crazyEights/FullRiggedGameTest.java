@@ -99,7 +99,7 @@ public class FullRiggedGameTest extends TestCase {
         assertEquals(4, game.getActivePlayer());
         assertTrue(game.canPlay());
         result = game.play(p4.getCard(Rank.TWO, Suit.CLUBS));
-        assertEquals(PlayResult.TWO_NO_CHAIN, result);
+        assertEquals(PlayResult.TWO, result);
 
         assertEquals(1, game.getActivePlayer());
         assertNull(game.canDenyTwo());
