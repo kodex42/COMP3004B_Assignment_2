@@ -346,7 +346,7 @@ public class Game {
 
     public boolean canDraw() {
         Player p = players.get(activePlayer-1);
-        return p.numTimesDrawn < 3 && deckHasCards();
+        return (p.numTimesDrawn == 0 || (p.numTimesDrawn < 3 && !canPlay())) && deckHasCards();
     }
 
     public boolean canDraw(int id) {
