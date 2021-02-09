@@ -30,7 +30,7 @@ public class Player implements Serializable {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         System.out.println("What is your name? ");
-        String name = scanner.next();
+        String name = scanner.nextLine();
 
         Player p = new Player(name);
         p.connectToClient();
