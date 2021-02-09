@@ -372,7 +372,7 @@ public class Game {
         for (int i = 0; i < round; i++) {
             activePlayer = getNextPlayer();
         }
-        reversed = false;
+        round++;
         for (Player p : players) {
             p.emptyHand();
         }

@@ -36,9 +36,9 @@ public class DrawingRulesTest extends TestCase {
         // player 1 draws the six of clubs
         assertTrue(game.canDraw());
         game.riggedDraw(Rank.SIX, Suit.CLUBS);
-        // player 1 is now able to play or continue drawing
+        // player 1 is not able to continue drawing, so they must play the six of clubs
         assertTrue(game.canPlay());
-        assertTrue(game.canDraw());
+        assertFalse(game.canDraw());
     }
 
     public void testPlayer1MustDraw2() {
@@ -79,9 +79,9 @@ public class DrawingRulesTest extends TestCase {
         // player 1 draws the five of clubs
         assertTrue(game.canDraw());
         game.riggedDraw(Rank.FIVE, Suit.CLUBS);
-        // player 1 is now able to play or continue drawing
+        // player 1 is not able to continue drawing, so they must play the six of clubs
         assertTrue(game.canPlay());
-        assertTrue(game.canDraw());
+        assertFalse(game.canDraw());
     }
 
     public void testPlayer1MustDraw3() {
@@ -127,7 +127,7 @@ public class DrawingRulesTest extends TestCase {
         // player 1 draws the seven of hearts
         assertTrue(game.canDraw());
         game.riggedDraw(Rank.SEVEN, Suit.HEARTS);
-        // player 1 is now able to play but unable to draw
+        // player 1 is not able to continue drawing, so they must play the seven of hearts
         assertTrue(game.canPlay());
         assertFalse(game.canDraw());
     }
@@ -268,9 +268,9 @@ public class DrawingRulesTest extends TestCase {
         assertTrue(game.canDraw());
         // player 1 chooses to draw the six of clubs
         game.riggedDraw(Rank.SIX, Suit.CLUBS);
-        // player 1 is still able to play or continue drawing
+        // player 1 is not able to continue drawing, so they must play the six of clubs
         assertTrue(game.canPlay());
-        assertTrue(game.canDraw());
+        assertFalse(game.canDraw());
         // player 1 decides to play the six of clubs
         PlayResult result = game.play(p1.getCard(Rank.SIX, Suit.CLUBS));
         assertEquals(PlayResult.OK, result);
