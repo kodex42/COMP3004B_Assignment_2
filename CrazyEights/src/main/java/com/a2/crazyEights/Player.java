@@ -65,8 +65,11 @@ public class Player implements Serializable {
             String nextPlayer = clientConnection.receivePlayerName();
             Card discardTop = clientConnection.receiveCard();
             int roundNumber = clientConnection.receiveSignal();
+            int turnNumber = clientConnection.receiveSignal();
+            boolean reversed = clientConnection.receiveBool();
 
             // Check if you are currently the active player
+            final String statusBanner = "[ROUND: " + roundNumber + "] [TURN: " + turnNumber + "] [ACTIVE PLAYER: " + activePlayer + "] [NEXT PLAYER: " + nextPlayer + "]" + " [PLAY DIRECTION: " + (reversed ? "Right]" : "Left]");
             if (activePlayer.equals(name)) {
                 System.out.println("\n******* Turn Start! *******");
                 // Get result of last play
@@ -74,7 +77,7 @@ public class Player implements Serializable {
                 boolean choosingActions = true;
                 do { // Enter action prompt loop
                     // Print game state
-                    System.out.println("ROUND: " + roundNumber + ", [ACTIVE PLAYER: " + activePlayer + "] [NEXT PLAYER: " + nextPlayer + "]");
+                    System.out.println(statusBanner);
                     for (Player p : opponents) {
                         System.out.println(p.getName() + " has " + p.getHandSize() + " cards left and a score of " + p.score);
                     }
@@ -182,6 +185,7 @@ public class Player implements Serializable {
                         System.out.println("******* Turn Over! *******");
                 } while (choosingActions);
             } else {
+                System.out.println(statusBanner);                
                 do {
                     System.out.println(clientConnection.receiveNotification()); // Get updates about the game state
                 } while (!clientConnection.receiveBool()); // While not activated

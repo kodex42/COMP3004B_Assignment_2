@@ -18,7 +18,7 @@ public class GameServer implements Serializable {
     // Accessible data members
     Game game;
     int numPlayers;
-    int turns;
+    int turns = 0;
     boolean isPlaying = true;
 
     // Private data members
@@ -109,6 +109,8 @@ public class GameServer implements Serializable {
                     playerSever.sendPlayerName(nextPlayerName);
                     playerSever.sendCard(game.discard.peek());
                     playerSever.sendSignal(game.round);
+                    playerSever.sendSignal(turns);
+                    playerSever.sendBool(game.reversed);
                 }
 
                 // Handle player actions
@@ -260,6 +262,7 @@ public class GameServer implements Serializable {
                         playerServer.sendNotification(activePlayer.getName() + " has ended the round due to " + (result == PlayResult.ROUND_WIN ? "winning the round!" : "stalemate.") + scoreboard);
                     }
                     game.roundStart();
+                    turns = 0;
                 } else
                     for (int i = 0; i < numPlayers; i++)
                         playerServers.get(i).sendBool(false);
