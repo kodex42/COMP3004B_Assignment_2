@@ -3,7 +3,7 @@ package com.a2.crazyEights;
 import junit.framework.TestCase;
 
 public class PlayabilityTest extends TestCase {
-    public void testPlayerCanPlayKHOnKC() {
+    public void testPlayerCanPlayMatchingRank() {
         // Declare objects
         Game game = new Game(4);
         Player p1 = new Player("P1");
@@ -38,7 +38,7 @@ public class PlayabilityTest extends TestCase {
         assertEquals(2, game.getActivePlayer());
     }
 
-    public void testPlayerCanPlay7COnKC() {
+    public void testPlayerCanPlayMatchingSuit() {
         // Declare objects
         Game game = new Game(4);
         Player p1 = new Player("P1");
@@ -73,7 +73,7 @@ public class PlayabilityTest extends TestCase {
         assertEquals(2, game.getActivePlayer());
     }
 
-    public void testPlayerCanPlay8HOnKC() {
+    public void testPlayerCanPlayEight() {
         // Declare objects
         Game game = new Game(4);
         Player p1 = new Player("P1");
@@ -109,7 +109,7 @@ public class PlayabilityTest extends TestCase {
         assertEquals(2, game.getActivePlayer());
     }
 
-    public void testPlayerCannotPlay5SOnKC() {
+    public void testPlayerCannotPlay() {
         // Declare objects
         Game game = new Game(4);
         Player p1 = new Player("P1");

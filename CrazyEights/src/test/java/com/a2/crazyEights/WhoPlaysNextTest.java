@@ -37,7 +37,7 @@ public class WhoPlaysNextTest extends TestCase {
         assertEquals(2, game.getActivePlayer());
     }
 
-    public void testPlayer4AfterPlayer1Ace() {
+    public void testPlayer4AfterPlayer1Reversed() {
         // Declare objects
         Game game = new Game(4);
         Player p1 = new Player("P1");
@@ -71,7 +71,7 @@ public class WhoPlaysNextTest extends TestCase {
         assertEquals(4, game.getActivePlayer());
     }
 
-    public void testPlayer3AfterPlayer1Queen() {
+    public void testPlayer3AfterPlayer1Skip() {
         // Declare objects
         Game game = new Game(4);
         Player p1 = new Player("P1");
@@ -148,7 +148,7 @@ public class WhoPlaysNextTest extends TestCase {
         assertEquals(1, game.getActivePlayer());
     }
 
-    public void testPlayer3AfterPlayer4Ace() {
+    public void testPlayer3AfterPlayer4Reversed() {
         // Declare objects
         Game game = new Game(4);
         Player p1 = new Player("P1");
@@ -191,7 +191,7 @@ public class WhoPlaysNextTest extends TestCase {
         assertEquals(3, game.getActivePlayer());
     }
 
-    public void testPlayer2AfterPlayer4Queen() {
+    public void testPlayer2AfterPlayer4Skip() {
         // Declare objects
         Game game = new Game(4);
         Player p1 = new Player("P1");

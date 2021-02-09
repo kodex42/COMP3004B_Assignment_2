@@ -71,14 +71,14 @@ public class FullRiggedGameTest extends TestCase {
         assertFalse(game.canPlay());
         assertTrue(game.canDraw());
         game.riggedDraw(Rank.TWO, Suit.CLUBS);
-        assertFalse(game.isValidPlay(p4.getCard(Rank.TWO, Suit.CLUBS)));
+        assertFalse(game.canPlay());
         assertTrue(game.canDraw());
         game.riggedDraw(Rank.THREE, Suit.CLUBS);
-        assertFalse(game.isValidPlay(p4.getCard(Rank.THREE, Suit.CLUBS)));
+        assertFalse(game.canPlay());
         assertTrue(game.canDraw());
         game.riggedDraw(Rank.FOUR, Suit.CLUBS);
         assertFalse(game.canPlay());
-        assertFalse(game.isValidPlay(p4.getCard(Rank.FOUR, Suit.CLUBS)));
+        assertFalse(game.canDraw());
         game.pass();
 
         assertEquals(1, game.getActivePlayer());
@@ -124,9 +124,10 @@ public class FullRiggedGameTest extends TestCase {
         assertEquals(PlayResult.OK, result);
 
         assertEquals(1, game.getActivePlayer());
+        assertTrue(game.canPlay());
         assertTrue(game.canDraw());
         game.riggedDraw(Rank.SEVEN, Suit.CLUBS);
-        assertTrue(game.isValidPlay(p1.getCard(Rank.SEVEN, Suit.CLUBS)));
+        assertTrue(game.canPlay());
         result = game.play(p1.getCard(Rank.SEVEN, Suit.CLUBS));
         assertEquals(PlayResult.OK, result);
 
@@ -263,15 +264,16 @@ public class FullRiggedGameTest extends TestCase {
         assertEquals(PlayResult.OK, result);
 
         assertEquals(4, game.getActivePlayer());
+        assertTrue(game.canPlay());
         assertTrue(game.canDraw());
         game.riggedDraw(Rank.KING, Suit.SPADES);
-        assertFalse(game.isValidPlay(p4.getCard(Rank.KING, Suit.SPADES)));
+        assertFalse(game.canPlay());
         assertTrue(game.canDraw());
         game.riggedDraw(Rank.QUEEN, Suit.SPADES);
-        assertFalse(game.isValidPlay(p4.getCard(Rank.QUEEN, Suit.SPADES)));
+        assertFalse(game.canPlay());
         assertTrue(game.canDraw());
         game.riggedDraw(Rank.KING, Suit.HEARTS);
-        assertTrue(game.isValidPlay(p4.getCard(Rank.KING, Suit.HEARTS)));
+        assertTrue(game.canPlay());
         result = game.play(p4.getCard(Rank.KING, Suit.HEARTS));
         assertEquals(PlayResult.OK, result);
 
@@ -279,13 +281,13 @@ public class FullRiggedGameTest extends TestCase {
         assertFalse(game.canPlay());
         assertTrue(game.canDraw());
         game.riggedDraw(Rank.SIX, Suit.DIAMONDS);
-        assertFalse(game.isValidPlay(p1.getCard(Rank.SIX, Suit.DIAMONDS)));
+        assertFalse(game.canPlay());
         assertTrue(game.canDraw());
-        game.riggedDraw(Rank.TEN, Suit.DIAMONDS);
-        assertFalse(game.isValidPlay(p1.getCard(Rank.TEN, Suit.DIAMONDS)));
+        game.riggedDraw(Rank.QUEEN, Suit.DIAMONDS);
+        assertFalse(game.canPlay());
         assertTrue(game.canDraw());
         game.riggedDraw(Rank.JACK, Suit.DIAMONDS);
-        assertFalse(game.isValidPlay(p1.getCard(Rank.JACK, Suit.DIAMONDS)));
+        assertFalse(game.canPlay());
         assertFalse(game.canDraw());
         game.pass();
 
@@ -293,13 +295,13 @@ public class FullRiggedGameTest extends TestCase {
         assertFalse(game.canPlay());
         assertTrue(game.canDraw());
         game.riggedDraw(Rank.SIX, Suit.SPADES);
-        assertFalse(game.isValidPlay(p2.getCard(Rank.SIX, Suit.SPADES)));
+        assertFalse(game.canPlay());
         assertTrue(game.canDraw());
         game.riggedDraw(Rank.JACK, Suit.SPADES);
-        assertFalse(game.isValidPlay(p2.getCard(Rank.JACK, Suit.SPADES)));
+        assertFalse(game.canPlay());
         assertTrue(game.canDraw());
         game.riggedDraw(Rank.TEN, Suit.SPADES);
-        assertFalse(game.isValidPlay(p2.getCard(Rank.TEN, Suit.SPADES)));
+        assertFalse(game.canPlay());
         assertFalse(game.canDraw());
         game.pass();
 

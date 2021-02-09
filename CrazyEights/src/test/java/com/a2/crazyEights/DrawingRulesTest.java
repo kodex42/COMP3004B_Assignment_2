@@ -3,7 +3,7 @@ package com.a2.crazyEights;
 import junit.framework.TestCase;
 
 public class DrawingRulesTest extends TestCase {
-    public void testPlayer13Hvs7CMustDraw6CAndPlay() {
+    public void testPlayer1MustDraw1() {
         // Declare objects
         Game game = new Game(4);
         Player p1 = new Player("P1");
@@ -41,7 +41,7 @@ public class DrawingRulesTest extends TestCase {
         assertTrue(game.canDraw());
     }
 
-    public void testPlayer13Hvs7CMustDraw6DAnd5CAndPlay() {
+    public void testPlayer1MustDraw2() {
         // Declare objects
         Game game = new Game(4);
         Player p1 = new Player("P1");
@@ -84,7 +84,7 @@ public class DrawingRulesTest extends TestCase {
         assertTrue(game.canDraw());
     }
 
-    public void testPlayer13Hvs7CMustDraw6DAnd5SAnd7HAndPlay() {
+    public void testPlayer1MustDraw3() {
         // Declare objects
         Game game = new Game(4);
         Player p1 = new Player("P1");
@@ -132,7 +132,7 @@ public class DrawingRulesTest extends TestCase {
         assertFalse(game.canDraw());
     }
 
-    public void testPlayer13Hvs7CMustDraw6DAnd5SAnd4HAndCannotPlayOrDraw() {
+    public void testPlayer1MustDraw3AndPass() {
         // Declare objects
         Game game = new Game(4);
         Player p1 = new Player("P1");
@@ -188,7 +188,7 @@ public class DrawingRulesTest extends TestCase {
         assertFalse(game.canDraw());
     }
 
-    public void testPlayer13Hvs7CMustDraw6DAnd8HAndPlayAndDeclareSuit() {
+    public void testPlayer1MustDraw2AndPlayEight() {
         // Declare objects
         Game game = new Game(4);
         Player p1 = new Player("P1");
@@ -234,7 +234,7 @@ public class DrawingRulesTest extends TestCase {
         assertEquals(Suit.DIAMONDS, game.discard.peek().getSuit());
     }
 
-    public void testPlayer13CAndKSvs7CChoosesDraw6CAndPlay() {
+    public void testPlayer1ChoosesDraw1() {
         // Declare objects
         Game game = new Game(4);
         Player p1 = new Player("P1");

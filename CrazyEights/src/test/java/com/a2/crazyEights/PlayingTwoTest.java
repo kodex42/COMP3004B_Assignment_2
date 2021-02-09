@@ -5,7 +5,7 @@ import junit.framework.TestCase;
 import java.util.ArrayList;
 
 public class PlayingTwoTest extends TestCase {
-    public void testPlayer1Plays2CAndPlayer2Has4HAndDraws6CAnd9DAndPlays() {
+    public void testPlayer2DrawsFromTwoAndPlays() {
         // Declare objects
         Game game = new Game(4);
         Player p1 = new Player("P1");
@@ -49,7 +49,7 @@ public class PlayingTwoTest extends TestCase {
         assertEquals(3, game.getActivePlayer());
     }
 
-    public void testPlayer1Plays2CAndPlayer2Has4HAndDraws6SAnd9DAndMustDraw9HAnd6CAndPlays() {
+    public void testPlayer2DrawsFromTwoAndMustDraw() {
         // Declare objects
         Game game = new Game(4);
         Player p1 = new Player("P1");
@@ -101,7 +101,7 @@ public class PlayingTwoTest extends TestCase {
         assertEquals(3, game.getActivePlayer());
     }
 
-    public void testPlayer1Plays2CAndPlayer2Has4HAndDraws6SAnd9DAndMustDraw9HAnd6DAnd5HAndMustPass() {
+    public void testPlayer2DrawsFromTwoAndMustDrawAndPass() {
         // Declare objects
         Game game = new Game(4);
         Player p1 = new Player("P1");
@@ -155,7 +155,7 @@ public class PlayingTwoTest extends TestCase {
         assertEquals(3, game.getActivePlayer());
     }
 
-    public void testPlayer1Plays2CAndPlayer2Has4HAndDraws2HAnd9DAndPlays2HAndPlayer3Has7DAndDraws5SAnd6DAnd6HAnd7CAndPlays() {
+    public void testPlayer2DrawsFromTwoAndPlayer3DrawsFromStackedTwos() {
         // Declare objects
         Game game = new Game(4);
         Player p1 = new Player("P1");
@@ -208,7 +208,7 @@ public class PlayingTwoTest extends TestCase {
         assertEquals(4, game.getActivePlayer());
     }
 
-    public void testPlayer1Plays2CAndPlayer2Has4CAnd6CAnd9DAndDeniesTwo() {
+    public void testPlayer2DeniesTwoChain() {
         // Declare objects
         Game game = new Game(4);
         Player p1 = new Player("P1");
@@ -252,7 +252,7 @@ public class PlayingTwoTest extends TestCase {
         assertEquals(3, game.getActivePlayer());
     }
 
-    public void testPlayer1Plays2CAndPlayer2Has4CAnd6CAndDeniesTwo() {
+    public void testPlayer2DeniesTwoChainAndEndsRound() {
         // Declare objects
         Game game = new Game(4);
         Player p1 = new Player("P1");
