@@ -7,10 +7,7 @@ To compile and run this project, follow these steps:
   2. Extract the contents of the ZIP file to a directory of your choice
   3. Open IntelliJ and select 'Open' from the Welcome window
   4. Select the project folder you extracted in the directory you extracted it to and click 'OK'
-  5. One the project is loaded, expand the project window's directory tree and find the GameSever and Player classes
-  6. Right click the GameServer class, click 'Run', and input the amount of player's you want to play
-  7. Right click the Player class and click 'Run' once for the first player
-  8. At the top right of the window, click the 'Player' run configuration and select 'Edit Conifigurations'
-  9. In the Run/Debug configurations window, make sure the Player application is selected and press the key combination 'Alt-U' (this allows player applications to be run concurrently)
-  10. Right click the Player class and click 'Run' again for the remaining amount of players
-  11. Start the game by having each player input their name
+  5. One the project is loaded, locate the Run Configurations drop down menu at the top right of the IntelliJ window
+  6. Run one instance of GameServer and input the amount of players you would like to play (supports 3 or 4)
+  7. Run as many instances of Player as you need players and input each of their names in their run terminals
+  8. Play!
