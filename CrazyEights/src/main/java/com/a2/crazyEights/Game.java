@@ -71,12 +71,12 @@ public class Game {
     }
 
     public void roundStart() {
+        reversed = false;
         activePlayer = 1;
         for (int i = 0; i < round; i++) {
             activePlayer = getNextPlayer();
         }
         round++;
-        reversed = false;
         for (Player p : players) {
             p.emptyHand();
         }
@@ -367,11 +367,11 @@ public class Game {
 
     /* ONLY FOR TESTING */
     public void roundForceStartNoDeal(Rank r, Suit s) {
+        reversed = false;
         activePlayer = 1;
         for (int i = 0; i < round; i++) {
             activePlayer = getNextPlayer();
         }
-        round++;
         reversed = false;
         for (Player p : players) {
             p.emptyHand();
