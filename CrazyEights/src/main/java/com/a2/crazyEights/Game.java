@@ -87,15 +87,17 @@ public class Game {
     }
 
     public PlayResult playEight(Card card, Suit newSuit) {
-        // Play card from player's hand
+        Player player = players.get(activePlayer-1);
+        // Play card from player's hand and reset draw count
         // This is done server side to prevent loss of cards through the socket
-        discard.add(players.get(activePlayer-1).playCard(card));
+        discard.add(player.playCard(card));
+        player.numTimesDrawn = 0;
 
         // Change the suit of the card
         declareSuit(newSuit);
 
         // Check for win condition
-        if (players.get(activePlayer-1).getHandSize() == 0)
+        if (player.getHandSize() == 0)
             return PlayResult.ROUND_WIN;
 
         activePlayer = getNextPlayer();
@@ -155,11 +157,10 @@ public class Game {
         Player player = players.get(activePlayer-1);
         PlayResult result = PlayResult.OK;
 
+        /*-- CARD ONE --*/
         // Check if the card can be played
-        if (!isValidPlay(c1))
+        if (!isValidPlaySequence(c1, c2))
             return PlayResult.INVALID_PLAY;
-        else
-            player.numTimesDrawn = 0; // Reset the player's draw count since their play is valid
 
         // Play card from player's hand
         // This is done server side to prevent loss of cards through the socket
@@ -175,10 +176,7 @@ public class Game {
                 break;
         }
 
-        // Check if the card can be played
-        if (!isValidPlay(c2))
-            return PlayResult.INVALID_PLAY;
-
+        /*-- CARD TWO --*/
         // Play card from player's hand
         // This is done server side to prevent loss of cards through the socket
         discard.add(player.playCard(c2));
@@ -191,6 +189,9 @@ public class Game {
                 break;
             case TWO:
                 result = PlayResult.TWO;
+                break;
+            case EIGHT:
+                result = PlayResult.WILD;
                 break;
             case QUEEN:
                 result = PlayResult.SKIP;
@@ -243,6 +244,10 @@ public class Game {
         discard.set(0, c.getRank(), s);
     }
 
+    public boolean isValidPlaySequence(Card c, Card k) {
+        return !c.equals(k) && (c.getRank() == k.getRank() || c.getSuit() == k.getSuit() || k.getRank() == Rank.EIGHT || c.getRank() == Rank.EIGHT);
+    }
+
     public boolean isValidPlay(Card card) {
         Card current = discard.peek();
         return (
@@ -264,30 +269,45 @@ public class Game {
         return next;
     }
 
+    public int getNextPlayerFrom(int id) {
+        int increment = reversed ? -1 : 1;
+        int next = id + increment;
+        if (next > numPlayers) next -= numPlayers;
+        if (next < 1) next += numPlayers;
+        return next;
+    }
+
+    public int getPlayerScore(int i) {
+        return players.get(i).score;
+    }
+
     public boolean deckHasCards() {
         return deck.size() > 0;
     }
 
     public boolean nextPlayerHasTwo() {
         Player next = players.get(getNextPlayer());
-
-        ArrayList<Card> hand = next.getHand();
-        for (Card card : hand) {
-            if (card.getRank() == Rank.TWO)
-                return true;
-        }
-        return false;
+        return next.handContainsTwo();
     }
 
-    public void drawFromTwo() {
+    public ArrayList<Card> drawFromTwo() {
+        ArrayList<Card> cardsDrawn = new ArrayList<>();
         Player p = players.get(activePlayer-1);
         // draw two cards per number of stacked twos
         for (int i = 0; i < getNumStackedTwos(); i++) {
-            if (deckHasCards())
-                p.addCard(deck.draw());
-            if (deckHasCards())
-                p.addCard(deck.draw());
+            Card card;
+            if (deckHasCards()) {
+                card = deck.draw();
+                p.addCard(card);
+                cardsDrawn.add(card);
+            }
+            if (deckHasCards()) {
+                card = deck.draw();
+                p.addCard(card);
+                cardsDrawn.add(card);
+            }
         }
+        return cardsDrawn;
     }
 
     public ArrayList<Card> canDenyTwo() {
@@ -296,7 +316,7 @@ public class Game {
         for (Card c : p.getHand()) {
             if (isValidPlay(c))
                 for (Card k : p.getHand()) {
-                    if (!c.equals(k) && (c.getRank() == k.getRank() || c.getSuit() == k.getSuit() || k.getRank() == Rank.EIGHT)) {
+                    if (isValidPlaySequence(c, k)) {
                         playableCardSequence.add(c);
                         playableCardSequence.add(k);
                         return playableCardSequence;
@@ -307,10 +327,14 @@ public class Game {
     }
 
     public boolean canPlay() {
-        for (Card card : players.get(activePlayer-1).getHand()) {
-            if (isValidPlay(card)) return true;
+        Player p = players.get(activePlayer-1);
+        if (p.numTimesDrawn > 0) return isValidPlay(p.getHand().get(p.getHandSize()-1));
+        else {
+            for (Card card : players.get(activePlayer - 1).getHand()) {
+                if (isValidPlay(card)) return true;
+            }
+            return false;
         }
-        return false;
     }
 
     public boolean canPlay(int id) {
@@ -330,12 +354,15 @@ public class Game {
         return p.numTimesDrawn < 3 && deckHasCards();
     }
 
-    public void draw() {
+    public Card draw() {
         Player p = players.get(activePlayer-1);
         if (canDraw()) {
-            p.addCard(deck.draw());
+            Card card = deck.draw();
+            p.addCard(card);
             p.numTimesDrawn++;
+            return card;
         }
+        return null;
     }
 
     /* ONLY FOR TESTING */
@@ -379,4 +406,13 @@ enum PlayResult {
     TWO,
     ROUND_WIN,
     STALEMATE
+}
+
+enum Action {
+    PLAY,
+    CHAIN_TWO,
+    DRAW,
+    DRAW_FROM_TWO,
+    DENY_TWO,
+    PASS
 }

@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 
-public class CardStack {
+public class CardStack implements Serializable {
 
     private ArrayList<Card> cards = new ArrayList<>();
     private boolean faceUp;
@@ -30,9 +30,7 @@ public class CardStack {
     }
 
     public void set(int i, Rank r, Suit s) {
-        Card c = cards.get(i);
-        c.setRank(r);
-        c.setSuit(s);
+        cards.set(i, new Card(r, s));
     }
 
     public Card get(int i) {

@@ -22,7 +22,7 @@ public class GameServer implements Serializable {
     boolean isPlaying = true;
 
     // Private data members
-    private ArrayList<Server> playerServers = new ArrayList<>();
+    private final ArrayList<Server> playerServers = new ArrayList<>();
     private ServerSocket ss;
 
     public GameServer() {
@@ -87,46 +87,218 @@ public class GameServer implements Serializable {
 
     public void gameLoop() {
         try {
+            PlayResult result = PlayResult.OK;
             for (int i = 0; i < numPlayers; i++)
                 playerServers.get(i).sendSignal(0); // Activate players
             game.roundStart();
-            while (isPlaying) {
+            while (game.champion == null) {
                 turns++;
 
+                String activePlayerName = game.players.get(game.getActivePlayer()-1).getName();
+                String nextPlayerName = game.players.get(game.getNextPlayer()-1).getName();
+
+                // Send all data to players
                 for (int i = 0; i < numPlayers; i++) {
-                    // Send relevant data to players
                     Server playerSever = playerServers.get(i);
-                    playerSever.sendOpponents(game.players, game.players.get(i)); // For names and hand counts
+                    playerSever.sendOpponents(game.players, game.players.get(i));
+                    playerSever.sendOpponentNames(game.players, game.players.get(i));
+                    playerSever.sendOpponentHandCounts(game.players, game.players.get(i));
+                    playerSever.sendOpponentScores(game.players, game.players.get(i));
                     playerSever.sendHand(game.players.get(i).getHand());
-                    
+                    playerSever.sendPlayerName(activePlayerName);
+                    playerSever.sendPlayerName(nextPlayerName);
+                    playerSever.sendCard(game.discard.peek());
+                    playerSever.sendSignal(game.round);
                 }
 
-                int activePlayer = game.getActivePlayer();
-                int nextPlayer = game.getNextPlayer();
-                boolean canPlay = game.canPlay();
-                boolean canDraw = game.canDraw();
+                // Handle player actions
+                Server activePlayerServer = playerServers.get(game.getActivePlayer()-1);
+                Player activePlayer;
+                activePlayerServer.sendSignal(result.ordinal());
+                boolean gettingActions = true;
+                do {
+                    activePlayer = game.players.get(game.getActivePlayer()-1);
+                    activePlayerServer.sendSignal(activePlayer.numTimesDrawn);
+                    // Send options to active player
+                    if (result == PlayResult.TWO) {
+                        activePlayerServer.sendBool( game.canDenyTwo() != null);
+                    } else {
+                        activePlayerServer.sendBool(game.canPlay());
+                        activePlayerServer.sendBool(game.canDraw());
+                    }
 
-                if (game.champion != null)
-                    isPlaying = false;
+                    // Get the player's action
+                    Action action = Action.values()[activePlayerServer.receiveSignal()];
+                    Card card;
+                    Suit suit = null;
+                    switch (action) {
+                        case PLAY:
+                            do { // Let the player keep trying to play cards until they stop being dumb and pick a valid card
+                                card = activePlayerServer.receiveCard();
+                                if (card.getRank() == Rank.EIGHT) {
+                                    suit = Suit.values()[activePlayerServer.receiveSignal()];
+                                    result = game.playEight(card, suit);
+                                }
+                                else
+                                    result = game.play(card);
+                                // Send result to player
+                                activePlayerServer.sendSignal(result.ordinal());
+                            } while (result == PlayResult.INVALID_PLAY);
+                            switch (result) {
+                                case OK:
+                                    notifyNonActivePlayers(activePlayer, activePlayer.getName() + " plays the " + card, true);
+                                    break;
+                                case SKIP:
+                                    notifyNonActivePlayers(activePlayer, activePlayer.getName() + " plays the " + card + ", causing " + game.players.get(game.getNextPlayerFrom(activePlayer.getPlayerId())-1).getName() + " to skip their turn!", true);
+                                    break;
+                                case REVERSE:
+                                    notifyNonActivePlayers(activePlayer, activePlayer.getName() + " plays the " + card + " causing the play order to reverse!", true);
+                                    break;
+                                case WILD:
+                                    notifyNonActivePlayers(activePlayer, activePlayer.getName() + " plays the " + card + " declaring " + suit + " as the active suit!", true);
+                                    break;
+                                case TWO:
+                                    notifyNonActivePlayers(activePlayer, activePlayer.getName() + " plays the " + card + " causing " + game.players.get(game.getNextPlayerFrom(activePlayer.getPlayerId())-1).getName() + " to either draw, deny, or respond!", true);
+                                    break;
+                                case ROUND_WIN:
+                                    notifyNonActivePlayers(activePlayer, activePlayer.getName() + " plays the " + card + " emptying their hand and winning the round!", true);
+                                    break;
+                                case STALEMATE:
+                                    notifyNonActivePlayers(activePlayer, activePlayer.getName() + " plays the " + card + " causing a stalemate!", true);
+                                    break;
+                            }
+                            gettingActions = false;
+                            break;
+                        case CHAIN_TWO:
+                            do { // Let the player keep trying to play cards until they stop being dumb and pick a valid Two
+                                card = activePlayerServer.receiveCard();
+                                result = game.play(card);
+                                // Send result to player
+                                activePlayerServer.sendSignal(result.ordinal());
+                            } while (result == PlayResult.INVALID_PLAY);
+                            notifyNonActivePlayers(activePlayer, activePlayer.getName() + " has played the " + card + ", continuing a Two Chain!", true);
+                            gettingActions = false;
+                            break;
+                        case DRAW:
+                            card = game.draw();
+                            activePlayerServer.sendCard(card);
+                            if (card != null)
+                                notifyNonActivePlayers(activePlayer, activePlayer.getName() + " has drawn the " + card, false);
+                            else
+                                notifyNonActivePlayers(activePlayer, activePlayer.getName() + " attempted to draw, but no more cards could be drawn!", false);
+                            break;
+                        case DRAW_FROM_TWO:
+                            ArrayList<Card> cardsDrawn = game.drawFromTwo();
+                            activePlayerServer.sendHand(cardsDrawn);
+                            if (!cardsDrawn.isEmpty())
+                                notifyNonActivePlayers(activePlayer, activePlayer.getName() + " has drawn " + cardsDrawn + " as a result of the Two Chain!", false);
+                            else
+                                notifyNonActivePlayers(activePlayer, activePlayer.getName() + " attempted to draw, but no more cards could be drawn!", false);
+                            result = PlayResult.OK;
+                            break;
+                        case DENY_TWO:
+                            ArrayList<Card> sequence;
+                            do { // Let the player keep trying to play card sequences until they pick a valid sequence
+                                sequence = activePlayerServer.receivePlaySequence();
+                                result = game.denyTwo(sequence);
+                                if (sequence.get(1).getRank() == Rank.EIGHT) { // If the second card is an Eight, then the player needs to declare a suit
+                                    suit = Suit.values()[activePlayerServer.receiveSignal()];
+                                    game.declareSuit(suit);
+                                }
+                                // Send result to player
+                                activePlayerServer.sendSignal(result.ordinal());
+                            } while (result == PlayResult.INVALID_PLAY);
+                            notifyNonActivePlayers(activePlayer, activePlayer.getName() + " ended the Two Chain by playing the " + sequence.get(0) + " and the " + sequence.get(1) + "!", false);
+                            switch (result) {
+                                case OK:
+                                    notifyNonActivePlayers(activePlayer, activePlayer.getName() + "'s " + sequence.get(1) + " is on top of the discard.", true);
+                                    break;
+                                case SKIP:
+                                    notifyNonActivePlayers(activePlayer, activePlayer.getName() + "'s " + sequence.get(1) + " causes " + game.players.get(game.getNextPlayerFrom(activePlayer.getPlayerId())-1).getName() + " to skip their turn!", true);
+                                    break;
+                                case REVERSE:
+                                    notifyNonActivePlayers(activePlayer, activePlayer.getName() + "'s " + sequence.get(1) + " causes the play order to reverse!", true);
+                                    break;
+                                case WILD:
+                                    notifyNonActivePlayers(activePlayer, activePlayer.getName() + "'s " + sequence.get(1) + " causes them to change the active suit to " + suit + "!", true);
+                                    break;
+                                case TWO:
+                                    notifyNonActivePlayers(activePlayer, activePlayer.getName() + "'s " + sequence.get(1) + " causes " + game.players.get(game.getNextPlayerFrom(activePlayer.getPlayerId())-1).getName() + " to either draw, deny, or respond!", true);
+                                    break;
+                                case ROUND_WIN:
+                                    notifyNonActivePlayers(activePlayer, activePlayer.getName() + "'s " + sequence.get(1) + " causes them to empty their hand, winning the round!", true);
+                                    break;
+                                case STALEMATE:
+                                    notifyNonActivePlayers(activePlayer, activePlayer.getName() + "'s " + sequence.get(1) + " causes a stalemate!", true);
+                                    break;
+                            }
+                            gettingActions = false;
+                            break;
+                        case PASS:
+                            game.pass();
+                            notifyNonActivePlayers(activePlayer, activePlayer.getName() + " passed the turn", true);
+                            gettingActions = false;
+                            break;
+                    }
+                } while (gettingActions);
+
+                // Check if the round has ended
+                if (result == PlayResult.ROUND_WIN || result == PlayResult.STALEMATE) {
+                    // Build the scoreboard
+                    StringBuilder scoreboard = new StringBuilder("\nSCORE:");
+                    ArrayList<Player> players = game.players;
+                    for (int i = 0; i < players.size(); i++) {
+                        Player p = players.get(i);
+                        scoreboard.append("\n").append(p.getName()).append(": ").append(game.getPlayerScore(i));
+                    }
+                    scoreboard.append("\n");
+                    // Notify players
+                    for (int i = 0; i < numPlayers; i++) {
+                        Server playerServer = playerServers.get(i);
+                        playerServer.sendBool(true);
+                        playerServer.sendSignal(game.getPlayerScore(i));
+                        playerServer.sendNotification(activePlayer.getName() + " has ended the round due to " + (result == PlayResult.ROUND_WIN ? "winning the round!" : "stalemate.") + scoreboard);
+                    }
+                    game.roundStart();
+                } else
+                    for (int i = 0; i < numPlayers; i++)
+                        playerServers.get(i).sendBool(false);
+
+                // Check if the game is over
+                isPlaying = game.champion == null;
+                for (int i = 0; i < numPlayers; i++)
+                    playerServers.get(i).sendBool(isPlaying);
+                if (!isPlaying) {
+                    for (int i = 0; i < numPlayers; i++)
+                        playerServers.get(i).sendNotification(game.champion.getName() + " WINS THE GAME!");
+                    break;
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
+    private void notifyNonActivePlayers(Player active, String notification, boolean activation) {
+        for (int i = 0; i < numPlayers; i++) {
+            if (i != active.getPlayerId()-1) {
+                playerServers.get(i).sendNotification(notification);
+                playerServers.get(i).sendBool(activation);
+            }
+        }
+    }
+
     /* EXTRA CLASSES */
     public class Server implements Runnable {
-        private Socket socket;
         private ObjectInputStream dIn;
         private ObjectOutputStream dOut;
-        private int playerId;
+        private final int playerId;
 
         public Server(Socket s, int pId){
-            socket = s;
             playerId = pId;
             try {
-                dOut = new ObjectOutputStream(socket.getOutputStream());
-                dIn = new ObjectInputStream(socket.getInputStream());
+                dOut = new ObjectOutputStream(s.getOutputStream());
+                dIn = new ObjectInputStream(s.getInputStream());
             } catch (IOException e) {
                 System.out.println("Server Connection Failed");
             }
@@ -173,20 +345,67 @@ public class GameServer implements Serializable {
             }
         }
 
-        // Send all player objects' hand count to other players
-        public void sendOpponentHandCounts(ArrayList<Player> plist, Player sentTo, int[] handSizes) {
+        // Send all player objects' scores to other players
+        public void sendOpponentScores(ArrayList<Player> plist, Player sentTo) {
             try {
                 // Send the number of player hand counts being sent
-                sendNumOpponents(plist.size());
+                sendNumOpponents(plist.size()-1);
                 for (int i = 0; i < numPlayers; i++) {
                     Player p = plist.get(i);
                     if (p != sentTo) { // Do not send player self data as opponent
-                        dOut.writeInt(handSizes[i]);
+                        dOut.writeInt(p.score);
                         dOut.flush();
                     }
                 }
             } catch (IOException e) {
                 System.out.println("Could not send player hand counts");
+                e.printStackTrace();
+            }
+        }
+
+        // Send all player objects' names to other players
+        public void sendOpponentNames(ArrayList<Player> plist, Player sentTo) {
+            try {
+                // Send the number of player hand counts being sent
+                sendNumOpponents(plist.size()-1);
+                for (int i = 0; i < numPlayers; i++) {
+                    Player p = plist.get(i);
+                    if (p != sentTo) { // Do not send player self data as opponent
+                        dOut.writeUTF(p.getName());
+                        dOut.flush();
+                    }
+                }
+            } catch (IOException e) {
+                System.out.println("Could not send player hand counts");
+                e.printStackTrace();
+            }
+        }
+
+        // Send all player objects' hand count to other players
+        public void sendOpponentHandCounts(ArrayList<Player> plist, Player sentTo) {
+            try {
+                // Send the number of player hand counts being sent
+                sendNumOpponents(plist.size()-1);
+                for (int i = 0; i < numPlayers; i++) {
+                    Player p = plist.get(i);
+                    if (p != sentTo) { // Do not send player self data as opponent
+                        dOut.writeInt(p.getHandSize());
+                        dOut.flush();
+                    }
+                }
+            } catch (IOException e) {
+                System.out.println("Could not send player hand counts");
+                e.printStackTrace();
+            }
+        }
+
+        // Send a cardstack object to other players
+        public void sendCardStack(CardStack cardStack) {
+            try {
+                dOut.writeObject(cardStack);
+                dOut.flush();
+            } catch (IOException e) {
+                System.out.println("Could not send card stack");
                 e.printStackTrace();
             }
         }
@@ -228,6 +447,39 @@ public class GameServer implements Serializable {
             }
         }
 
+        // Send the a player's name from the server to a client
+        public void sendPlayerName(String s) {
+            try {
+                dOut.writeUTF(s);
+                dOut.flush();
+            } catch (IOException e) {
+                System.out.println("Could not send player name");
+                e.printStackTrace();
+            }
+        }
+
+        // Send a notification from the server to a client
+        public void sendNotification(String s) {
+            try {
+                dOut.writeUTF(s);
+                dOut.flush();
+            } catch (IOException e) {
+                System.out.println("Could not send notification");
+                e.printStackTrace();
+            }
+        }
+
+        // Send a boolean from the server to a client
+        public void sendBool(boolean b) {
+            try {
+                dOut.writeBoolean(b);
+                dOut.flush();
+            } catch (IOException e) {
+                System.out.println("Could not send boolean");
+                e.printStackTrace();
+            }
+        }
+
         // Send a generic signal to a player
         public void sendSignal(int sig) {
             try {
@@ -239,12 +491,26 @@ public class GameServer implements Serializable {
             }
         }
 
-        // Receive a player object
+        // Receive a Player object
         public Player receivePlayer() {
             try {
                 return (Player) dIn.readObject();
             } catch (IOException e) {
                 System.out.println("Player not received");
+                e.printStackTrace();
+            } catch (ClassNotFoundException e) {
+                System.out.println("Class not found");
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        // Receive a Card object
+        public Card receiveCard() {
+            try {
+                return (Card) dIn.readObject();
+            } catch (IOException e) {
+                System.out.println("Card not received");
                 e.printStackTrace();
             } catch (ClassNotFoundException e) {
                 System.out.println("Class not found");
@@ -262,6 +528,47 @@ public class GameServer implements Serializable {
                 e.printStackTrace();
             }
             return 0;
+        }
+
+        // Receive a signal from the player
+        public int receiveSignal() {
+            try {
+                return dIn.readInt();
+            } catch (IOException e) {
+                System.out.println("Signal not received");
+                e.printStackTrace();
+            }
+            return -1;
+        }
+
+        // Receive the number of cards to be sent to the player
+        public int receiveNumCards() {
+            try {
+                return dIn.readInt();
+            } catch (IOException e) {
+                System.out.println("Number of cards not received");
+                e.printStackTrace();
+            }
+            return 0;
+        }
+
+        // Receive a sequence of cards from a player
+        public ArrayList<Card> receivePlaySequence() {
+            // Get the number of cards being received
+            int numCards = receiveNumCards();
+            ArrayList<Card> clist = new ArrayList<>();
+            try {
+                for (int i = 0; i < numCards; i++) {
+                    clist.add((Card) dIn.readObject());
+                }
+            } catch (IOException e) {
+                System.out.println("Hand not received");
+                e.printStackTrace();
+            } catch (ClassNotFoundException e) {
+                System.out.println("Class not found");
+                e.printStackTrace();
+            }
+            return clist;
         }
     }
 }
