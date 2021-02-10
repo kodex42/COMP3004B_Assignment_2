@@ -245,7 +245,7 @@ public class Game {
     }
 
     public boolean isValidPlaySequence(Card c, Card k) {
-        return !c.equals(k) && (c.getRank() == k.getRank() || c.getSuit() == k.getSuit() || k.getRank() == Rank.EIGHT || c.getRank() == Rank.EIGHT);
+        return !c.equals(k) && isValidPlay(c) && (c.getRank() == k.getRank() || c.getSuit() == k.getSuit() || k.getRank() == Rank.EIGHT);
     }
 
     public boolean isValidPlay(Card card) {
