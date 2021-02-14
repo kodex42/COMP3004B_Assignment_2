@@ -109,60 +109,60 @@ class Card implements Serializable {
         String s, r;
         switch (suit) {
             case CLUBS:
-                s = "Clubs";
+                s = "C";
                 break;
             case DIAMONDS:
-                s = "Diamonds";
+                s = "D";
                 break;
             case HEARTS:
-                s = "Hearts";
+                s = "H";
                 break;
             case SPADES: default:
-                s = "Spades";
+                s = "S";
                 break;
         }
         switch (rank) {
             case ACE:
-                r = "Ace";
+                r = "A";
                 break;
             case TWO:
-                r = "Two";
+                r = "2";
                 break;
             case THREE:
-                r = "Three";
+                r = "3";
                 break;
             case FOUR:
-                r = "Four";
+                r = "4";
                 break;
             case FIVE:
-                r = "Five";
+                r = "5";
                 break;
             case SIX:
-                r = "Six";
+                r = "6";
                 break;
             case SEVEN:
-                r = "Seven";
+                r = "7";
                 break;
             case EIGHT:
-                r = "Eight";
+                r = "8";
                 break;
             case NINE:
-                r = "Nine";
+                r = "9";
                 break;
             case TEN:
-                r = "Ten";
+                r = "T";
                 break;
             case JACK:
-                r = "Jack";
+                r = "J";
                 break;
             case QUEEN:
-                r = "Queen";
+                r = "Q";
                 break;
             case KING: default:
-                r = "King";
+                r = "K";
                 break;
         }
-        return r + " of " + s;
+        return r + s;
     }
 }
 

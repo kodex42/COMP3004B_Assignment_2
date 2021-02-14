@@ -250,15 +250,15 @@ public class Player implements Serializable {
         Scanner scanner = new Scanner(System.in);
         do {
             System.out.println("Choose a Suit...");
-            System.out.println("[Clubs]");
-            System.out.println("[Diamonds]");
-            System.out.println("[Hearts]");
-            System.out.println("[Spades]");
+            System.out.println("C -> [Clubs]");
+            System.out.println("D -> [Diamonds]");
+            System.out.println("H -> [Hearts]");
+            System.out.println("S -> [Spades]");
             String suit = scanner.next();
-            if (suit.equalsIgnoreCase("clubs")) return Suit.CLUBS;
-            if (suit.equalsIgnoreCase("diamonds")) return Suit.DIAMONDS;
-            if (suit.equalsIgnoreCase("hearts")) return Suit.HEARTS;
-            if (suit.equalsIgnoreCase("spades")) return Suit.SPADES;
+            if (suit.equalsIgnoreCase("C")) return Suit.CLUBS;
+            if (suit.equalsIgnoreCase("D")) return Suit.DIAMONDS;
+            if (suit.equalsIgnoreCase("H")) return Suit.HEARTS;
+            if (suit.equalsIgnoreCase("S")) return Suit.SPADES;
             else System.out.println("Please choose a valid suit.");
         } while (true);
     }
